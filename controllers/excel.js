@@ -5,10 +5,10 @@ const config = require('../config');
 const debug = require('debug')('server:excel');
 const fs = require('fs');
 const _ = require('underscore');
-const moment = require('moment-timezone');
 const Device = require('../lib/Device');
 const replacements = Object.keys(config.replace);
 const Status = require('http-status-codes');
+const { getJsDateFromExcel } = require("excel-date-to-js");
 
 /**
  * The UnitCode is held in the static data, but need to be sent as
@@ -102,48 +102,34 @@ function createEntitiesFromXlsx(rows) {
             }
         });
 
+        entity.location = {
+            "type": "Address",
+            "value": {
+                "type": "areaServed",
+                "value": entity.id.value
+            }
+        };
+
         entity.type = 'WaterQualityObserved';
         entity.id = 'urn:ngsi-ld:WaterQualityObserved:waterqualityobserved:WWTP:' + entity.id.value;
-/*
-        config.float.forEach((float) => {
-            if (entity[float]) {
-                entity[float].value = Number.parseFloat(entity[float].value);
-            }
-        });
-        config.integer.forEach((integer) => {
-            if (entity[integer]) {
-                entity[integer].value = Number.parseFloat(entity[integer].value);
-            }
-        });
+
         config.datetime.forEach((datetime) => {
             if (entity[datetime]) {
                 try {
                     entity[datetime].value = {
                         '@type': 'DateTime',
-                        '@value': moment.tz(entity[datetime].value, 'Etc/UTC').toISOString()
+                        '@value': getJsDateFromExcel(entity[datetime].value).toISOString()
                     };
                 } catch (e) {
                     debug(e);
                 }
             }
         });
-        config.relationship.forEach((relationship) => {
-            if (entity[relationship]) {
-                entity[relationship] = {
-                    type: 'Relationship',
-                    object: 'urn:ngsi-ld:DeviceModel:' + String(entity[relationship].value)
-                };
-            }
-        });
 
-        // Code unit is to be stored as metadata
-        if (entity.code_unit && entity.code_unit.value !== '-') {
-            storeDeviceUnitCode(entity.id, entity.code_unit.value, (err) => {
-                debug('stored device', err);
-            });
-            delete entity.code_unit;
-        }
-        */
+        entity['@context'] = [
+            'https://schema.lab.fiware.org/ld/context',
+            'https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld'
+        ]
 
         entities.push(entity);
 

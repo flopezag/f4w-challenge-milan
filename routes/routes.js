@@ -12,15 +12,15 @@ function asyncHelper(fn) {
 }
 
 // Read and upload the .xls file from lab analysis data
-/*
+
 router.post(
-    '/lab',
+    '/real',
     upload.single('file'),
     asyncHelper(async (req, res) => {
         await csvController.upload(req, res);
     })
 );
-*/
+
 
 // Read and upload the .csv file from real measure data
 router.post(
