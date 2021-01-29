@@ -7,7 +7,7 @@ const Device = require('../lib/Device');
 const Status = require('http-status-codes');
 const config = require('../config');
 const replacements = Object.keys(config.replace);
-const { getJsDateFromExcel } = require("excel-date-to-js");
+const date = require('date-and-time');
 
 /*
  * Delete the temporary file
@@ -71,18 +71,6 @@ async function getDeviceUnitCode(id) {
         debug('error: ' + err);
     }
     return data ? data.unitCode : undefined;
-}
-
-/*
- *  Strip the id and an key from the header row.
- */
-function parseId(input) {
-    const regexId = /^[^\s]+/;
-    const regexKey = /[\w]+$/;
-    const id = regexId.exec(input)[0];
-    const key = regexKey.exec(input)[0];
-
-    return { id, key };
 }
 
 /*
@@ -154,11 +142,8 @@ function createEntitiesFromMeasures(measures) {
         entity.type = 'WaterQualityObserved';
         entity.id = 'urn:ngsi-ld:WaterQualityObserved:waterqualityobserved:WWTP:' + plantId;
 
-        console.log(measure.dateObserved);
-
-        const d = new Date(measure.dateObserved);
-
-        console.log(d.toISOString());
+        //const d = new Date(measure.dateObserved);
+        const d = date.parse(measure.dateObserved, 'DD/MM/YYYY HH:mm:ss');
 
         entity.dateObserved = {
             "type": "Property",
@@ -168,7 +153,7 @@ function createEntitiesFromMeasures(measures) {
             }
         };
 
-        entity[measure.property] = {
+        entity[property] = {
             "type": "Property",
             "value": measure.value,
             "unitCode": ""
