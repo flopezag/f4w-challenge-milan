@@ -7,6 +7,8 @@ const fs = require('fs');
 const _ = require('underscore');
 const Device = require('../lib/Device');
 const replacements = Object.keys(config.replace);
+const meanValues = Object.keys(config.mean);
+const unitCode = Object.keys(config.unitCode);
 const Status = require('http-status-codes');
 const { getJsDateFromExcel } = require("excel-date-to-js");
 
@@ -80,6 +82,25 @@ function titleCase(str) {
  */
 function createEntitiesFromXlsx(rows) {
     const entities = [];
+    const indexes = [];
+
+    // We need to discard the columns not needed
+    _.map(config.ignoreColLab, (column) => {
+            indexes.push(rows[0].findIndex(element => element === column))
+        }
+    )
+
+    const filteredRows = []
+
+    // delete all columns (index) in all arrays
+    _.map(rows, (row) => {
+            filteredRows.push(
+                row.filter(function(value, index, arr){ return !indexes.includes(index);})
+            )
+        }
+    )
+
+    rows = filteredRows
 
     const headerFields = _.map(rows[0], (header) => {
         const field = titleCase(header);
@@ -93,12 +114,22 @@ function createEntitiesFromXlsx(rows) {
         const entity = {};
 
         headerFields.forEach((header, index) => {
-            const value = row[index];
+            let value = row[index];
             if (!config.ignore.includes(value)) {
-                entity[header] = {
-                    type: 'Property',
-                    value
-                };
+                value = meanValues.includes(value) ? config.mean[value] : value;
+                if(unitCode.includes(header)) {
+                    const unitCode = config.unitCode[header];
+                    entity[header] = {
+                        type: 'Property',
+                        value,
+                        unitCode
+                    };
+                } else {
+                    entity[header] = {
+                        type: 'Property',
+                        value
+                    };
+                }
             }
         });
 
