@@ -3,7 +3,7 @@ const config = {
     contextBroker: {
         host: 'orion',
         port: '1026',
-        jsonLdContext: 'http://csv-agent:3100/data-models/ngsi-context.jsonld'
+        jsonLdContext: 'https://schema.lab.fiware.org/ld/context'
     },
     replace: {
         'cod': 'COD',
@@ -14,7 +14,8 @@ const config = {
         'plant': 'id',
         'date': 'dateObserved',
         'Data/Ora': 'dateObserved',
-        'Valore': 'value'
+        'Valore': 'value',
+        'SST': 'tss'
     },
     ignoreColLab: ['WHEIGHTED', 'KIND OF SAMPLING', 'N PROTOCOL', 'EVENT NOTE', 'NOTE', 'pH (PH)',
         'Conducibility', 'BOD5', 'Total Nitrogen (as N)', 'Total ammonia nitrogen (as N)',
@@ -43,7 +44,8 @@ const config = {
         "PO4": "M1",
     },
     datetime: ['dateObserved'],
-    relationship: []
+    relationship: [],
+    scope: 5  // number of minutes between two notifications to Context Broker
 };
 
 module.exports = config;

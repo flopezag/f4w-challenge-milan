@@ -42,7 +42,7 @@ function readCsvFile(filename) {
         rows.push(temp);
 
         fs.createReadStream(path)
-            .pipe(csv.parse({ headers: true, discardUnmappedColumns: true}))
+            .pipe(csv.parse({ headers: true, discardUnmappedColumns: true, delimiter: ';'}))
             .on('error', (error) => {
                 reject(error.message);
             })
@@ -89,25 +89,19 @@ async function createMeasuresFromCsv(rows) {
 
     rows.shift();
 
-    const key = Object.keys(rows[0]).toString();
-
-    key.split(';').slice(0, 2).forEach((header) => {
-            header = replacements.includes(header) ? config.replace[header] : header;
-            headerInfo.push(header)
-        }
-    )
+    // Get the list of keys discarding the last columns from the csv file, no data.
+    const keys = Object.keys(rows[0]).toString().split(',').slice(0, 2);
 
     rows.forEach((row) => {
             const measure = {};
-            const value = row[key].toString().split(';');
+
+            keys.forEach((key) => {
+                header = replacements.includes(key) ? config.replace[key] : key;
+                measure[header] = row[key]
+            })
 
             // We need to delete the spaces in the value, second element of the array and should be a float
-            value[1] = parseFloat(value[1].replace(/\s+/g, ''));
-
-            headerInfo.forEach((header, index) => {
-                    measure[header] = value[index]
-                }
-            )
+            measure["value"] = parseFloat(measure["value"].replace(/\s+/g, '').replace(',', '.'));
 
             measures.push(measure);
         }
@@ -123,7 +117,7 @@ async function createMeasuresFromCsv(rows) {
  */
 function createEntitiesFromMeasures(measures) {
     const plantId = measures[0].plantId;
-    const property = measures[0].property;
+    const property = replacements.includes(measures[0].property) ? config.replace[measures[0].property] : measures[0].property;
     const entities = [];
 
     measures.shift();
@@ -171,14 +165,26 @@ function createEntitiesFromMeasures(measures) {
     return entities;
 }
 
+/**
+ * Sleep for some milliseconds
+ * @param millis number of milliseconds to sleep
+ * @returns {Promise<unknown>}
+ */
+function sleep(millis) {
+    return new Promise(resolve => setTimeout(resolve, millis));
+}
+
 /*
  * Create an array of promises to send data to the context broker.
  * Each insert represents a series of readings at a given timestamp
  */
 function createContextRequests(entities) {
     const promises = [];
+    const scope = config.scope;
     entities.forEach((entitiesAtTimeStamp) => {
         promises.push(Measure.sendAsHTTP(entitiesAtTimeStamp));
+        // need to wait 5 minutes... between each Push setTimeout(function2, 3000);
+        sleep(5*1000);  // sleep for 5 seconds
     });
     return promises;
 }
@@ -202,8 +208,7 @@ const upload = (req, res) => {
         })
         .then((entities) => {
             return createContextRequests(entities);
-        });
-        /*
+        })
         .then(async (promises) => {
             return await Promise.allSettled(promises);
         })
@@ -215,8 +220,6 @@ const upload = (req, res) => {
             debug(err.message);
             return res.status(Status.INTERNAL_SERVER_ERROR).send(err.message);
         });
-
-         */
 };
 
 module.exports = {
