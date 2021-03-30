@@ -1,0 +1,36 @@
+{
+    "AT_CONTEXT": [
+         "https://schema.lab.fiware.org/ld/context",
+         "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+    ],
+    "FILES": "data",
+    "URL_ENTITIES": "https://stellio-dev.eglobalmark.com/ngsi-ld/v1/entities/",
+    "PO4": {
+        "unitCode": "M1",
+        "propertyName": "PO4"
+    },
+    "NO3": {
+        "unitCode": "M1",
+        "propertyName": "NO3"
+
+    },
+    "NH4": {
+        "unitCode": "M1",
+        "propertyName": "NH4"
+
+    },
+    "SST": {
+        "unitCode": "M1",
+        "propertyName": "tss"
+
+    },
+    "COD": {
+        "unitCode": "M1",
+        "propertyName": "COD"
+
+    },
+    "flowrate": {
+        "unitCode": "MQS",
+        "propertyName": "flowrate"
+    }
+}
