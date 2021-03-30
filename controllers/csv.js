@@ -8,6 +8,7 @@ const Status = require('http-status-codes');
 const config = require('../config');
 const replacements = Object.keys(config.replace);
 const date = require('date-and-time');
+const interval = require('interval-promise')
 
 /*
  * Delete the temporary file
@@ -181,11 +182,14 @@ function sleep(millis) {
 function createContextRequests(entities) {
     const promises = [];
     const scope = config.scope;
+
+    // for testing I get only 5 elements
+    entities = entities.slice(0,5);
+
     entities.forEach((entitiesAtTimeStamp) => {
         promises.push(Measure.sendAsHTTP(entitiesAtTimeStamp));
-        // need to wait 5 minutes... between each Push setTimeout(function2, 3000);
-        sleep(5*1000);  // sleep for 5 seconds
     });
+
     return promises;
 }
 
@@ -210,7 +214,34 @@ const upload = (req, res) => {
             return createContextRequests(entities);
         })
         .then(async (promises) => {
-            return await Promise.allSettled(promises);
+            //return await Promise.allSettled(promises);
+            // run seq the promises foreach... run promises and wait n seconds
+            const delay = (milliseconds) => {
+                console.log(`Waiting: ${milliseconds / 1000} seconds.`);
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(milliseconds);
+                    }, milliseconds);
+                });
+            }
+
+            const startTime = Date.now();
+
+            const doNextPromise = (d) => {
+                delay(5000)
+
+                    .then(x => {
+                        console.log(`Waited: ${x / 1000} seconds\n`);
+                        d++;
+
+                        if (d < promises.length)
+                            doNextPromise(d)
+                        else
+                            console.log(`Total: ${(Date.now() - startTime) / 1000} seconds.`);
+                    })
+            }
+
+            await doNextPromise(0);
         })
         .then((results) => {
             const errors = _.where(results, { status: 'rejected' });

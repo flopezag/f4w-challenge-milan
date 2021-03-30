@@ -1,0 +1,52 @@
+{
+    "id": "urn:ngsi-ld:WaterQualityObserved:waterqualityobserved:WWTP:AAA",
+    "type": "WaterQualityObserved",
+    "dateObserved": {
+        "type": "Property",
+        "value": {
+            "@type": "DateTime",
+            "@value": "2017-01-31T06:45:00Z"
+        }
+    },
+    "location": {
+        "type": "Address",
+        "value": {
+            "type": "areaServed",
+            "value": "AAA"
+        }
+    },
+    "flowRate": {
+        "type": "Property",
+        "value": "39660",
+        "unitCode": ""
+    },
+    "cod": {     // mg/l
+        "type": "Property",
+        "value": 0.005,
+        "unitCode": "M1"
+    },
+    "tss": {
+        "type": "Property",
+        "value": 0.005,
+        "unitCode": "M1"
+    },
+    "NH4": {
+        "type": "Property",
+        "value": 0.005,
+        "unitCode": "M1"
+    },
+    "NO3": {
+        "type": "Property",
+        "value": 0.01,
+        "unitCode": "M1"
+    },
+    "PO4": {
+        "type": "Property",
+        "value": 0.3,
+        "unitCode": "M1"
+    },
+    "@context": [
+        "https://schema.lab.fiware.org/ld/context",
+        "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+    ]
+}

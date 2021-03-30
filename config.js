@@ -1,7 +1,7 @@
 const config = {
     mongodb: 'mongodb://localhost:27017/iotagent-csv',
     contextBroker: {
-        host: 'orion',
+        host: '127.0.0.1',
         port: '1026',
         jsonLdContext: 'https://schema.lab.fiware.org/ld/context'
     },

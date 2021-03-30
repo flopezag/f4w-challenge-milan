@@ -1,0 +1,27 @@
+{
+  "id": "urn:ngsi-ld:WaterQualityObserved:waterqualityobserved:WWTP:AAA",
+  "type": "WaterQualityObserved",
+  "location": {
+    "type": "Address",
+    "value": {
+      "type": "areaServed",
+      "value": "AAA"
+    }
+  },
+  "dateObserved": {
+    "type": "Property",
+    "value": {
+      "@type": "DateTime",
+      "@value": "2019-05-06T06:32:10.000Z"
+    }
+  },
+  "undefined": {
+    "type": "Property",
+    "value": 1.038,
+    "unitCode": ""
+  },
+  "@context": [
+    "https://schema.lab.fiware.org/ld/context",
+    "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+  ]
+}

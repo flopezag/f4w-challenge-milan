@@ -19,10 +19,10 @@
 version: "3.5"
 services:
   # Orion is the context broker
-  orion:
+  orionld:
     image: fiware/orion-ld #:${ORION_LD_VERSION}
     hostname: orion
-    container_name: fiware-orion
+    container_name: fiware-orionld
     depends_on:
       - mongo-db
     networks:
@@ -31,7 +31,7 @@ services:
       - "${ORION_LD_PORT}:${ORION_LD_PORT}" # localhost:1026
     command: -dbhost mongo-db -logLevel DEBUG
     healthcheck:
-      test: curl --fail -s http://orion:${ORION_LD_PORT}/version || exit 1
+      test: curl --fail -s http://orionld:${ORION_LD_PORT}/version || exit 1
 
   # Databases
   mongo-db:
