@@ -9,4 +9,4 @@ if __name__ == '__main__':
     ngsi = NGSI(loglevel=LOGLEVEL)
 
     # Read each file and upload their content into Context Broker
-    result = [ngsi.process(file=csv_file) for csv_file in CSV_FILES]
+    [ngsi.process(file=csv_file) for csv_file in CSV_FILES]

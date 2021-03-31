@@ -4,7 +4,7 @@ from pytz import timezone
 from datetime import datetime
 from pandas import read_csv
 from requests import post
-from logging import error, info
+from logging import error, info, debug
 from time import sleep
 
 __author__ = 'Fernando López'
@@ -77,7 +77,7 @@ class NGSI(LoggingConf):
 
         _, data = self.__data__(date_observed=date_observed, measure=measure)
 
-        info(f"Create: Data to be uploaded:\n {data}\n")
+        debug(f"Create: Data to be uploaded:\n {data}\n")
 
         # CREATE
         info('Creating ...')
@@ -93,7 +93,7 @@ class NGSI(LoggingConf):
 
         entity_id, data = self.__data__(date_observed=date_observed, measure=measure)
 
-        info(f"Patch: Data to be uploaded:\n {data}\n")
+        debug(f"Patch: Data to be uploaded:\n {data}\n")
 
         # PATCH
         info('Patching ...')

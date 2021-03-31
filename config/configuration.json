@@ -6,7 +6,7 @@
     "files": "data",
     "broker": "http://127.0.0.1:1026",
     "log_level": "INFO",
-    "scope": 5,
+    "scope": 1,
     "PO4": {
         "unitCode": "M1",
         "propertyName": "PO4"

@@ -61,4 +61,5 @@ PROPERTIES = configuration.copy()
 DATAHOME = join(CODEHOME, CSV_FOLDER)
 
 # List of all csv files to process
-CSV_FILES = list(map(lambda x: (x, join(DATAHOME, x)), listdir(DATAHOME)))
+files = [f for f in listdir(DATAHOME) if f.endswith('.csv')]
+CSV_FILES = list(map(lambda x: (x, join(DATAHOME, x)), files))
