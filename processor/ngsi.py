@@ -1,14 +1,18 @@
-from config.settings import AT_CONTEXT, URL_ENTITIES, PROPERTIES
+from config.settings import AT_CONTEXT, URL_BROKER, PROPERTIES, SCOPE
 from config.logging_conf import LoggingConf
 from pytz import timezone
 from datetime import datetime
 from pandas import read_csv
 from requests import post
+from logging import error, info
+from time import sleep
+
+__author__ = 'Fernando López'
 
 
 class NGSI(LoggingConf):
-    def __init__(self):
-        super(NGSI, self).__init__(loglevel=loglevel, log_file='askbot.log')
+    def __init__(self, loglevel):
+        super(NGSI, self).__init__(loglevel=loglevel, log_file='f4w-challenge-milan.log')
 
         self.entityId = ""
         self.propertyName = ""
@@ -17,7 +21,8 @@ class NGSI(LoggingConf):
             'Content-Type': 'application/ld+json'
         }
 
-        self.url = URL_ENTITIES
+        self.url_entities = URL_BROKER + '/ngsi-ld/v1/entities'
+        self.url_entities_op = URL_BROKER + '/ngsi-ld/v1/entityOperations/update'
 
         self.timezone_UTC = timezone('UTC')
 
@@ -32,6 +37,8 @@ class NGSI(LoggingConf):
         self.propertyName = filename[1]
 
     def process(self, file):
+        info(f"Starting process of file: {file[0]}")
+
         # Set the filename to extract EntityId and Property name
         self.set_file(file[0])
 
@@ -44,10 +51,9 @@ class NGSI(LoggingConf):
         # Sort the data by Data/Ora
         df = df.sort_values(by=['Data/Ora'])
 
-        # First record of a DMA will be uploaded as a CREATE,
+        # First record of a measure will be uploaded as a CREATE,
         # then other records will be uploaded as a PATCH
         row_1 = df[:1]
-        print(row_1)
         self.create(row_1['Data/Ora'].values[0], row_1['Valore'].values[0])
 
         # Get the last values of the excel file: PATCH
@@ -55,9 +61,9 @@ class NGSI(LoggingConf):
 
         # Iterating over two columns, use `zip`
         try:
-            result = [self.patch(date_observed=x, measure=y) for x, y in zip(df['Data/Ora'], df['Valore'])]
+            [self.update(date_observed=x, measure=y) for x, y in zip(last['Data/Ora'], last['Valore'])]
         except ValueError as e:
-            print(e)
+            error("There was a problem parsing the csv data")
 
     def __get_values__(self, date_observed, measure):
         measure = float(measure.strip().replace(",", "."))
@@ -69,40 +75,33 @@ class NGSI(LoggingConf):
     def create(self, date_observed, measure):
         date_observed, measure = self.__get_values__(date_observed=date_observed, measure=measure)
 
-        #         plantId = 'urn:ngsi-ld:WaterConsumption:' + dateObserved
-        #         period = 900
-        #         observedAt = row['DTT']
-        #         observedAt = datetime.strptime(observedAt, '%d/%m/%Y %H:%M')
-        #         observedAt = timezone_UTC.localize(observedAt).isoformat()
-        #         measure = row['Litres']
-        #         if created:
-        #             # CREATE
-        #             print('creating ...')
-        #             # entity = ngsi_entity(dma, plantId, observedAt, measure, period)
-        #             # r = post(URL_ENTITIES, json=entity, headers=headers_post)
-        #             # print(f'Status: [{r.status_code}]')
-        #             created = True
+        _, data = self.__data__(date_observed=date_observed, measure=measure)
 
-    def patch(self, date_observed, measure):
+        info(f"Create: Data to be uploaded:\n {data}\n")
+
+        # CREATE
+        info('Creating ...')
+        r = post(self.url_entities, json=data, headers=self.headersPost)
+        info(f'Create Status: [{r.status_code}]')
+
+        # Wait some time to proceed with the following
+        sleep(SCOPE)
+
+    def update(self, date_observed, measure):
+        # it is not working...
         date_observed, measure = self.__get_values__(date_observed=date_observed, measure=measure)
 
-        data = self.__data__(date_observed=date_observed, measure=measure)
+        entity_id, data = self.__data__(date_observed=date_observed, measure=measure)
 
-        print(data)
+        info(f"Patch: Data to be uploaded:\n {data}\n")
 
-        #         plantId = 'urn:ngsi-ld:WaterConsumption:' + dateObserved
-        #         period = 900
-        #         observedAt = row['DTT']
-        #         observedAt = datetime.strptime(observedAt, '%d/%m/%Y %H:%M')
-        #         observedAt = timezone_UTC.localize(observedAt).isoformat()
-        #         measure = row['Litres']
-        #         if created:
-        #             # PATCH
-        #             print('patching ...')
-        #             # entity = ngsi_patch(observedAt, measure, period)
-        #             URL_PATCH = URL_ENTITIES+plantId+'/attrs'
-        #             #r = post(URL_PATCH, json=entity, headers=headers_post)
-        #             # print(f'Status: [{r.status_code}]')
+        # PATCH
+        info('Patching ...')
+        r = post(self.url_entities_op, json=[data], headers=self.headersPost)
+        info(f'Patch Status: [{r.status_code}]')
+
+        # Wait some seconds to proceed with the following request
+        sleep(SCOPE)
 
     def __data__(self, date_observed, measure):
         date_observed = {
@@ -110,14 +109,6 @@ class NGSI(LoggingConf):
             "value": {
                 "@type": "DateTime",
                 "@value": date_observed
-            }
-        }
-
-        location = {
-            "type": "Address",
-            "value": {
-                "type": "areaServed",
-                "value": self.entityId
             }
         }
 
@@ -136,51 +127,8 @@ class NGSI(LoggingConf):
             "id": entity_id,
             "type": entity_type,
             "dateObserved": date_observed,
-            "location": location,
             property_data['propertyName']: entity_property,
             "@context": AT_CONTEXT
         }
 
-        return data
-
-
-    # def ngsi_create(id, date, attribute, measure):
-    #     ngsi_json = {
-    #         '@context': AT_CONTEXT,
-    #         'id': plantId,
-    #         'type': 'WaterConsumption',
-    #         'dma': {
-    #             'type': 'Property',
-    #             'value': dma
-    #         },
-    #         'litres': {
-    #             'type': 'Property',
-    #             'value': measure,
-    #             'observedAt': observedAt,
-    #             'unitCode': 'LTR',
-    #             'period': {
-    #                 'type': 'Property',
-    #                 'value': period,
-    #                 'unitCode': 'SEC'
-    #             }
-    #         }
-    #     }
-    #
-    #     return (ngsi_json)
-    #
-    # def ngsi_patch(observedAt, measure, period):
-    #     ngsi_json = {
-    #         '@context': AT_CONTEXT,
-    #         "litres": {
-    #             'type': 'Property',
-    #             'value': measure,
-    #             'observedAt': observedAt,
-    #             'unitCode': 'LTR',
-    #             'period': {
-    #                 'type': 'Property',
-    #                 'value': period,
-    #                 'unitCode': 'SEC'
-    #             }
-    #         }
-    #     }
-    #     return (ngsi_json)
+        return entity_id, data

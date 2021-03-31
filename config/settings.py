@@ -1,6 +1,7 @@
 from json import load
 from os import listdir
 from os.path import join, dirname, abspath
+from logging import _nameToLevel as nameToLevel
 
 __author__ = 'fla'
 
@@ -17,16 +18,42 @@ with open(CONFIGFILE, 'r') as f:
     configuration = load(f)
 
 # NGSI-LD Context
-AT_CONTEXT = configuration['AT_CONTEXT']
-configuration.pop('AT_CONTEXT')
+AT_CONTEXT = configuration['context']
+configuration.pop('context')
 
 # CSV_FOLDER should start without any '/', the folder in which the csv files are included, relative to the code
-CSV_FOLDER = configuration['FILES']
-configuration.pop('FILES')
+CSV_FOLDER = configuration['files']
+configuration.pop('files')
 
 # URL for entities
-URL_ENTITIES = configuration['URL_ENTITIES']
-configuration.pop('URL_ENTITIES')
+URL_BROKER = configuration['broker']
+configuration.pop('broker')
+
+# LOG LEVEL
+LOGLEVEL = configuration['log_level']
+
+try:
+    LOGLEVEL = nameToLevel[LOGLEVEL]
+except Exception as e:
+    print('Invalid log level: {}'.format(LOGLEVEL))
+    print('Please use one of the following values:')
+    print('   * CRITICAL')
+    print('   * ERROR')
+    print('   * WARNING')
+    print('   * INFO')
+    print('   * DEBUG')
+    print('   * NOTSET')
+    exit()
+
+configuration.pop('log_level')
+
+# Scope
+try:
+    SCOPE = configuration['scope']
+    configuration.pop('scope')
+except KeyError as e:
+    # It is not defined scope, therefore the default value is 0
+    SCOPE = 0
 
 PROPERTIES = configuration.copy()
 
