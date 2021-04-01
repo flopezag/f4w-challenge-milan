@@ -1,4 +1,3 @@
-#!/usr/bin/env <PATH_DESKSREMINDER>/env/bin/python
 # -*- coding: utf-8 -*-
 ##
 # Copyright 2019 FIWARE Foundation, e.V.
