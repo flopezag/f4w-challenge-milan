@@ -23,7 +23,3 @@ IoT Agent to translate .xls and .csv into NGSI-LD to be used in the Fiware4Water
   pip install -r requirements.txt
   ```
 
-time=Tuesday 30 Mar 20:14:55 2021.126Z | lvl=ERROR | corr=N/A | trans=N/A | from=N/A | srv=N/A | subsrv=N/A | comp=Orion | op=kjTreeToContextAttribute.cpp[625]:kjTreeToContextAttribute | msg=Invalid type for attribute 'type': 'Address'
-
-time=Tuesday 30 Mar 20:14:55 2021.127Z | lvl=ERROR | corr=N/A | trans=N/A | from=N/A | srv=N/A | subsrv=N/A | comp=Orion | op=orionldPostEntities.cpp[377]:orionldPostEntities | msg=kjTreeToContextAttribute failed: Invalid type for attribute
-

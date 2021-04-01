@@ -88,17 +88,16 @@ class NGSI(LoggingConf):
         sleep(SCOPE)
 
     def update(self, date_observed, measure):
-        # it is not working...
         date_observed, measure = self.__get_values__(date_observed=date_observed, measure=measure)
 
         entity_id, data = self.__data__(date_observed=date_observed, measure=measure)
 
-        debug(f"Patch: Data to be uploaded:\n {data}\n")
+        debug(f"Update: Data to be uploaded:\n {data}\n")
 
-        # PATCH
-        info('Patching ...')
+        # UPDATE
+        info('Updating ...')
         r = post(self.url_entities_op, json=[data], headers=self.headersPost)
-        info(f'Patch Status: [{r.status_code}]')
+        info(f'Update Status: [{r.status_code}]')
 
         # Wait some seconds to proceed with the following request
         sleep(SCOPE)
